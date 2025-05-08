@@ -1,0 +1,79 @@
+
+services:
+  user-service:
+    build: ./user-service
+    ports:
+      - "5001:5001"
+    environment:
+      - SERVICE_NAME=user-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - NODE_ENV=development
+    depends_on:
+      - otel-collector
+    networks:
+      - observability-net
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "5002:5002"
+    environment:
+      - SERVICE_NAME=order-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - NODE_ENV=development
+    depends_on:
+      - user-service
+      - otel-collector
+    networks:
+      - observability-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    networks:
+      - observability-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.2
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+    networks:
+      - observability-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - observability-net
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.55
+    ports:
+      - "16686:16686"
+    networks:
+      - observability-net
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - "4317:4317"
+    depends_on:
+      - jaeger
+    networks:
+      - observability-net
+
+networks:
+  observability-net:
