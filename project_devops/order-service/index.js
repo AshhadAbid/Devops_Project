@@ -1,4 +1,3 @@
-// order-service/index.js
 require('./tracing');
 
 const express = require('express');

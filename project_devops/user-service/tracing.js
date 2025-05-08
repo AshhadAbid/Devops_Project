@@ -4,15 +4,13 @@ const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-grpc')
 
 const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter({
-    url: 'http://otel-collector:4317',
+    url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4317',
   }),
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
-sdk.start()
-  .then(() => {
-    console.log('Tracing initialized');
-  })
-  .catch((error) => {
-    console.error('Error initializing tracing', error);
-  });
+sdk.start().then(() => {
+  console.log('OpenTelemetry tracing initialized');
+}).catch((error) => {
+  console.error('Error initializing tracing', error);
+});
