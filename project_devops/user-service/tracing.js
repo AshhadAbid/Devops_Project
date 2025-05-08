@@ -9,8 +9,14 @@ const sdk = new NodeSDK({
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
-sdk.start().then(() => {
-  console.log('OpenTelemetry tracing initialized');
-}).catch((error) => {
-  console.error('Error initializing tracing', error);
-});
+const initializeTracing = async () => {
+  try {
+    await sdk.start();
+    console.log('OpenTelemetry tracing initialized');
+  } catch (error) {
+    console.error('Error initializing tracing', error);
+  }
+};
+
+initializeTracing();
+

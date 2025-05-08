@@ -60,16 +60,21 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:1.55
     ports:
-      - "4318:4318"
+      - "16686:16686"
+      - "14250"
     networks:
       - observability-net
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.98.0
+    image: otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
-      - "4317:4317"
+      - "1888:1888"   # pprof extension
+      - "13133:13133" # health_check extension
+      - "4317:4317"        # OTLP gRPC receiver
+      - "4318:4318"        # OTLP HTTP receiver
+      - "55670:55679" # zpages extension
     depends_on:
       - jaeger
     networks:
