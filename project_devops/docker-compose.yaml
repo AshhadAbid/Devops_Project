@@ -1,4 +1,3 @@
-
 services:
   user-service:
     build: ./user-service
@@ -60,25 +59,35 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:1.55
     ports:
-      - "16686:16686"
-      - "14250"
-    networks:
-      - observability-net
+      - "5775:5775"  # For thrift compact protocol
+      - "6831:6831/udp"  # For UDP protocol
+      - "6832:6832/udp"  # For UDP protocol
+      - "5778:5778"  # For HTTP protocol
+      - "16686:16686"  # Jaeger UI
+      - "14250:14250"  # For gRPC endpoint
+      - "14268:14268"  # For HTTP endpoint (deprecated)
+      - "14250:14250"  # gRPC
+
+
+
+
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.85.0
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
-      - "1888:1888"   # pprof extension
-      - "13133:13133" # health_check extension
-      - "4317:4317"        # OTLP gRPC receiver
-      - "4318:4318"        # OTLP HTTP receiver
-      - "55670:55679" # zpages extension
+      - "1888:1888"
+      - "13133:13133"
+      - "4317:4317"
+      - "4318:4318"
+      - "55670:55679"
     depends_on:
       - jaeger
     networks:
       - observability-net
+
+
 
 networks:
   observability-net:

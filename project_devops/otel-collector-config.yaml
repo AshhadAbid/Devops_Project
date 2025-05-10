@@ -2,21 +2,22 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:4317
-
+      
       http:
-        endpoint: 0.0.0.0:4318
+      
 
 exporters:
-  jaeger:
-    endpoint: jaeger-all-in-one:14250
+  otlp:
+    endpoint: otel-collector:4317
     tls:
       insecure: true
+
+processors:
+  batch: {}
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [jaeger]
-      
+      exporters: [otlp]
